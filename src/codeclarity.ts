@@ -71,6 +71,29 @@ export interface License {
   deps_using_license: string[];
 }
 
+/** One dependency of an analysis's workspace, as the SBOM records it. */
+export interface Dependency {
+  name: string;
+  version: string;
+  latest_version: string;
+  license: string;
+  direct: boolean;
+  transitive: boolean;
+  release_date: string;
+  lastest_release_date: string;
+  vulnerabilities: string[];
+  severity_dist: Record<string, number>;
+}
+
+/** A node of the dependency graph: a dependency, and the ones that import it. */
+export interface GraphNode {
+  // name@version, or __VIRTUAL_ROOT__ for the workspace itself.
+  id: string;
+  parentIds: string[];
+  prod: boolean;
+  dev: boolean;
+}
+
 /** Reads one organization of one instance with an Organization token. */
 export class CodeClarityClient {
   private readonly baseUrl: string;
@@ -165,6 +188,60 @@ export class CodeClarityClient {
       ["projects", projectId, "analysis", analysisId, "licenses"],
       { workspace },
     );
+  }
+
+  /**
+   * Reads one dependency of an analysis's workspace
+   * @throws {ApiError} If the API refuses the token, or the workspace has no such dependency
+   *
+   * @param projectId The id of the project
+   * @param analysisId The id of one of its analyses
+   * @param workspace The workspace, such as "." for the project's root
+   * @param dependency The dependency, as name@version
+   * @returns the dependency
+   */
+  async dependency(
+    projectId: string,
+    analysisId: string,
+    workspace: string,
+    dependency: string,
+  ): Promise<Dependency> {
+    const answer = await this.get<{ data: Dependency }>(
+      ["projects", projectId, "analysis", analysisId, "sbom", "dependency"],
+      { workspace, dependency },
+    );
+    return answer.data;
+  }
+
+  /**
+   * Reads the part of the dependency graph that leads from the workspace to one dependency
+   * @throws {ApiError} If the API refuses the token, or the workspace has no such dependency
+   *
+   * @param projectId The id of the project
+   * @param analysisId The id of one of its analyses
+   * @param workspace The workspace, such as "." for the project's root
+   * @param dependency The dependency, as name@version
+   * @returns the dependency's node and the nodes of every dependency that leads to it
+   */
+  async dependencyGraph(
+    projectId: string,
+    analysisId: string,
+    workspace: string,
+    dependency: string,
+  ): Promise<GraphNode[]> {
+    const answer = await this.get<{ data: GraphNode[] }>(
+      [
+        "projects",
+        projectId,
+        "analysis",
+        analysisId,
+        "sbom",
+        "dependency",
+        "graph",
+      ],
+      { workspace, dependency },
+    );
+    return answer.data;
   }
 
   /**

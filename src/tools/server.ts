@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/server";
 import { type CodeClarityClient } from "../codeclarity";
 import { ListAnalysesTool } from "./analyses";
+import { ExplainDependencyTool } from "./explain";
 import { GetFindingsTool } from "./findings";
 import { ListLicensesTool } from "./licenses";
 import { ListProjectsTool } from "./projects";
@@ -31,6 +32,7 @@ export function createServer(
     new ListAnalysesTool(client),
     new GetFindingsTool(client),
     new ListLicensesTool(client),
+    new ExplainDependencyTool(client),
   ];
   for (const tool of tools) {
     tool.register(server);
