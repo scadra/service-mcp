@@ -6,12 +6,18 @@ export interface Config {
   token: string;
 }
 
-/** Reads the same variables as the codeclarity CLI, and names every one that is missing. */
+/**
+ * Reads the same variables as the codeclarity CLI
+ * @throws {Error} Naming every variable that is missing
+ *
+ * @param env The environment to read, process.env by default
+ * @returns the configuration, with the URL's trailing slashes removed
+ */
 export function configFromEnv(env: NodeJS.ProcessEnv = process.env): Config {
   const config: Config = {
-    url: (env.CODECLARITY_URL ?? "").replace(/\/+$/, ""),
-    organizationId: env.CODECLARITY_ORG ?? "",
-    token: env.CODECLARITY_TOKEN ?? "",
+    url: (env["CODECLARITY_URL"] ?? "").replace(/\/+$/, ""),
+    organizationId: env["CODECLARITY_ORG"] ?? "",
+    token: env["CODECLARITY_TOKEN"] ?? "",
   };
   const missing = [
     ["CODECLARITY_ORG", config.organizationId],

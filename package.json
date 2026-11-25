@@ -3,7 +3,6 @@
   "version": "0.0.1-alpha",
   "description": "CodeClarity's MCP server: read an organization's analysis results from an AI assistant",
   "license": "AGPL-3.0-only",
-  "type": "module",
   "bin": {
     "codeclarity-mcp": "dist/main.js"
   },

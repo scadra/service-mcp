@@ -1,19 +1,27 @@
 import { createServer, type IncomingMessage, type Server } from "node:http";
 import { type AddressInfo } from "node:net";
 import { afterEach, describe, expect, it } from "vitest";
-import { ApiError, CodeClarityClient } from "./codeclarity.js";
+import { ApiError, CodeClarityClient } from "./codeclarity";
 
 let server: Server | undefined;
 
-/** Starts an API that answers every request with status and body, and records the requests. */
+/**
+ * Starts an API that answers every request the same way, and records the requests
+ *
+ * @param status The HTTP status of every answer
+ * @param body The body of every answer
+ * @returns the API's URL and the requests it received
+ */
 async function fakeApi(
   status: number,
   body: string,
 ): Promise<{ url: string; requests: IncomingMessage[] }> {
   const requests: IncomingMessage[] = [];
-  server = createServer((req, res) => {
-    requests.push(req);
-    res.writeHead(status, { "Content-Type": "application/json" }).end(body);
+  server = createServer((request, response) => {
+    requests.push(request);
+    response
+      .writeHead(status, { "Content-Type": "application/json" })
+      .end(body);
   });
   await new Promise<void>((resolve) => server?.listen(0, "127.0.0.1", resolve));
   const { port } = server.address() as AddressInfo;
@@ -31,13 +39,13 @@ describe("CodeClarityClient", () => {
       '{"data":[{"id":"p1"}],"page":0,"total_pages":3,"total_entries":3}',
     );
 
-    const n = await new CodeClarityClient(
+    const projects = await new CodeClarityClient(
       `${api.url}/`,
       "org/1",
       "ccot_test",
     ).projectCount();
 
-    expect(n).toBe(3);
+    expect(projects).toBe(3);
     expect(api.requests[0]?.url).toBe(
       "/org/org%2F1/projects?page=0&entries_per_page=1",
     );
@@ -52,7 +60,7 @@ describe("CodeClarityClient", () => {
 
     const error = await new CodeClarityClient(api.url, "org-1", "ccot_test")
       .projectCount()
-      .catch((e: unknown) => e);
+      .catch((error: unknown) => error);
 
     expect(error).toBeInstanceOf(ApiError);
     expect((error as ApiError).status).toBe(403);

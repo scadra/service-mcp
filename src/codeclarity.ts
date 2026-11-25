@@ -1,5 +1,12 @@
 /** An error answer of the API, with the message it sent. */
 export class ApiError extends Error {
+  /**
+   * Builds the message from what the API sent, keeping only the parts it gave
+   *
+   * @param status The HTTP status
+   * @param code The API's error_code, or "" when it sent none
+   * @param apiMessage The API's error_message, or "" when it sent none
+   */
   constructor(
     readonly status: number,
     readonly code: string,
@@ -28,6 +35,11 @@ export interface Page<T> {
 export class CodeClarityClient {
   private readonly baseUrl: string;
 
+  /**
+   * @param baseUrl The API's base URL, such as https://codeclarity.example.com/api
+   * @param organizationId The id of the organization every call reads
+   * @param token The Organization token, sent as a Bearer token
+   */
   constructor(
     baseUrl: string,
     readonly organizationId: string,
@@ -36,7 +48,12 @@ export class CodeClarityClient {
     this.baseUrl = baseUrl.replace(/\/+$/, "");
   }
 
-  /** How many projects the organization has, which any read token may see. */
+  /**
+   * Counts the organization's projects, which any read token may see
+   * @throws {ApiError} If the API refuses the token or the call
+   *
+   * @returns the number of projects of the organization
+   */
   async projectCount(): Promise<number> {
     const page = await this.get<Page<unknown>>(["projects"], {
       page: "0",
@@ -45,7 +62,15 @@ export class CodeClarityClient {
     return page.total_entries;
   }
 
-  /** Reads a route of the organization, such as get(["projects", id]). */
+  /**
+   * Reads a route of the organization, such as get(["projects", id])
+   * @throws {ApiError} If the API answers with an error status
+   * @throws {Error} If the answer is not JSON
+   *
+   * @param parts The path segments after /org/{organizationId}, each one encoded
+   * @param query The query parameters
+   * @returns the API's answer, parsed as JSON
+   */
   private async get<T>(
     parts: string[],
     query: Record<string, string> = {},
@@ -73,13 +98,26 @@ export class CodeClarityClient {
     }
   }
 
+  /**
+   * Builds the path of an organization route
+   *
+   * @param parts The path segments after /org/{organizationId}
+   * @returns the path, with the organization id and every segment encoded
+   */
   private orgPath(parts: string[]): string {
     return ["/org", this.organizationId, ...parts]
-      .map((part, i) => (i === 0 ? part : encodeURIComponent(part)))
+      .map((part, index) => (index === 0 ? part : encodeURIComponent(part)))
       .join("/");
   }
 }
 
+/**
+ * Turns an error answer into an ApiError, keeping what the API explained
+ *
+ * @param status The HTTP status
+ * @param body The answer's body, JSON or not
+ * @returns the error, with error_code and error_message when the body has them
+ */
 function errorOf(status: number, body: string): ApiError {
   try {
     const answer = JSON.parse(body) as {

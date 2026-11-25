@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { configFromEnv } from "./config.js";
+import { configFromEnv } from "./config";
 
 describe("configFromEnv", () => {
   it("reads the CLI's variables", () => {
