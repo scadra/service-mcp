@@ -33,6 +33,7 @@ describe("McpApp", () => {
       "list_projects",
       "list_analyses",
       "get_findings",
+      "list_licenses",
     ]);
     await handle.close();
   });

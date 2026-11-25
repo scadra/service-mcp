@@ -61,6 +61,16 @@ export interface Finding {
   Description: string;
 }
 
+/** A license an analysis found, with the dependencies under it. */
+export interface License {
+  id: string;
+  name: string;
+  license_category: string;
+  license_compliance_violation: boolean;
+  unable_to_infer: boolean;
+  deps_using_license: string[];
+}
+
 /** Reads one organization of one instance with an Organization token. */
 export class CodeClarityClient {
   private readonly baseUrl: string;
@@ -133,6 +143,26 @@ export class CodeClarityClient {
   ): Promise<Finding[]> {
     return this.all<Finding>(
       ["projects", projectId, "analysis", analysisId, "vulnerabilities"],
+      { workspace },
+    );
+  }
+
+  /**
+   * Lists the licenses an analysis found in a workspace
+   * @throws {ApiError} If the API refuses the token, or the analysis is not the organization's
+   *
+   * @param projectId The id of the project
+   * @param analysisId The id of one of its analyses
+   * @param workspace The workspace, such as "." for the project's root
+   * @returns the licenses, each with the dependencies under it
+   */
+  async licenses(
+    projectId: string,
+    analysisId: string,
+    workspace: string,
+  ): Promise<License[]> {
+    return this.all<License>(
+      ["projects", projectId, "analysis", analysisId, "licenses"],
       { workspace },
     );
   }
