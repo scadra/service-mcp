@@ -31,6 +31,28 @@ export interface Page<T> {
   total_entries: number;
 }
 
+/** An analysis of a project, without its plugins' results. */
+export interface AnalysisSummary {
+  id: string;
+  status: string;
+  branch: string;
+  tag: string | null;
+  created_on: string;
+  failure_reason: string | null;
+}
+
+/** A project of the organization, with its analyses. */
+export interface Project {
+  id: string;
+  name: string;
+  // FILE for an upload, or the host of a linked repository, such as GITHUB.
+  type: string;
+  url: string;
+  default_branch: string;
+  added_on: string;
+  analyses: AnalysisSummary[];
+}
+
 /** Reads one organization of one instance with an Organization token. */
 export class CodeClarityClient {
   private readonly baseUrl: string;
@@ -60,6 +82,46 @@ export class CodeClarityClient {
       entries_per_page: "1",
     });
     return page.total_entries;
+  }
+
+  /**
+   * Lists the organization's projects
+   * @throws {ApiError} If the API refuses the token or the call
+   *
+   * @param search Only the projects whose name contains this text, or every project
+   * @returns the projects, each with its analyses
+   */
+  async projects(search?: string): Promise<Project[]> {
+    return this.all<Project>(
+      ["projects"],
+      search === undefined ? {} : { search_key: search },
+    );
+  }
+
+  /**
+   * Reads every page of a paginated route of the organization
+   * @throws {ApiError} If the API answers with an error status
+   *
+   * @param parts The path segments after /org/{organizationId}
+   * @param query The query parameters, without page and entries_per_page
+   * @returns the items of every page, in the API's order
+   */
+  private async all<T>(
+    parts: string[],
+    query: Record<string, string> = {},
+  ): Promise<T[]> {
+    const items: T[] = [];
+    for (let page = 0; ; page++) {
+      const answer = await this.get<Page<T>>(parts, {
+        ...query,
+        page: String(page),
+        entries_per_page: "100",
+      });
+      items.push(...answer.data);
+      if (page + 1 >= answer.total_pages) {
+        return items;
+      }
+    }
   }
 
   /**

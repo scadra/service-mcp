@@ -1,5 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/server";
 import { type CodeClarityClient } from "../codeclarity";
+import { registerListProjects } from "./projects";
 import { registerWhoami } from "./whoami";
 
 const instructions = `Reads one CodeClarity organization's analysis results: projects, analyses, vulnerabilities,
@@ -21,5 +22,6 @@ export function createServer(
     { instructions },
   );
   registerWhoami(server, client);
+  registerListProjects(server, client);
   return server;
 }
