@@ -18,6 +18,8 @@ RUN corepack install && chmod -R a+rwX /opt/corepack
 FROM toolchain AS mcp-build
 ENV PNPM_STORE_DIR=/pnpm/store
 COPY . .
+# Stage the pnpm config at the build root (minimumReleaseAge), as the api does.
+COPY .cloud/docker/pnpm-workspace.yaml ./pnpm-workspace.yaml
 # Full install, with the devDependencies the build needs.
 RUN --mount=type=cache,id=pnpm-store-mcp,target=/pnpm/store,sharing=locked \
     pnpm install --frozen-lockfile

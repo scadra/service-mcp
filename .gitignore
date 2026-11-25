@@ -4,3 +4,6 @@ coverage/
 *.tsbuildinfo
 .DS_Store
 **/.netrc
+
+# Staged by the CI install step (cp from .cloud/docker/pnpm-workspace.yaml), as in the api.
+pnpm-workspace.yaml

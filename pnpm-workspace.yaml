@@ -1,3 +1,0 @@
-# Same cooling-off window as the umbrella's pnpm-workspace.yaml: 3 days before a new version may be resolved.
-minimumReleaseAge: 4320
-verifyDepsBeforeRun: false

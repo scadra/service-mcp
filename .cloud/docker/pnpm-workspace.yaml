@@ -1,0 +1,11 @@
+# CI and the image build stage this file at the repository root, as for the api and
+# the frontend; it is the only copy they read.
+
+# Cooling-off window before a freshly published version may be resolved, in
+# minutes. 4320 is 3 days. Mirrors the umbrella's pnpm-workspace.yaml.
+minimumReleaseAge: 4320
+
+# Disable pnpm's pre-run dependency check. Under CI=true the implicit
+# re-install it triggers does not honor allowBuilds and fails with
+# ERR_PNPM_IGNORED_BUILDS. Mirrors the umbrella's pnpm-workspace.yaml.
+verifyDepsBeforeRun: false
