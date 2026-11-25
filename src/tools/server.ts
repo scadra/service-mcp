@@ -1,6 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/server";
 import { type CodeClarityClient } from "../codeclarity";
 import { ListAnalysesTool } from "./analyses";
+import { GetFindingsTool } from "./findings";
 import { ListProjectsTool } from "./projects";
 import { type ReadOnlyTool } from "./tool";
 import { WhoamiTool } from "./whoami";
@@ -27,6 +28,7 @@ export function createServer(
     new WhoamiTool(client),
     new ListProjectsTool(client),
     new ListAnalysesTool(client),
+    new GetFindingsTool(client),
   ];
   for (const tool of tools) {
     tool.register(server);

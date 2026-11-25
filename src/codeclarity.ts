@@ -53,6 +53,14 @@ export interface Project {
   analyses: AnalysisSummary[];
 }
 
+/** One vulnerability an analysis found, with every dependency it affects. */
+export interface Finding {
+  Vulnerability: string;
+  Severity: { Severity: number; SeverityClass: string };
+  Affected: { AffectedDependency: string; AffectedVersion: string }[];
+  Description: string;
+}
+
 /** Reads one organization of one instance with an Organization token. */
 export class CodeClarityClient {
   private readonly baseUrl: string;
@@ -107,6 +115,26 @@ export class CodeClarityClient {
    */
   async analyses(projectId: string): Promise<AnalysisSummary[]> {
     return this.all<AnalysisSummary>(["projects", projectId, "analyses"]);
+  }
+
+  /**
+   * Lists the vulnerabilities an analysis found in a workspace
+   * @throws {ApiError} If the API refuses the token, or the analysis is not the organization's
+   *
+   * @param projectId The id of the project
+   * @param analysisId The id of one of its analyses
+   * @param workspace The workspace, such as "." for the project's root
+   * @returns the findings, in the API's order
+   */
+  async findings(
+    projectId: string,
+    analysisId: string,
+    workspace: string,
+  ): Promise<Finding[]> {
+    return this.all<Finding>(
+      ["projects", projectId, "analysis", analysisId, "vulnerabilities"],
+      { workspace },
+    );
   }
 
   /**
