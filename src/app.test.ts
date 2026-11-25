@@ -35,6 +35,7 @@ describe("McpApp", () => {
       "get_findings",
       "list_licenses",
       "explain_dependency",
+      "fix_next",
     ]);
     await handle.close();
   });

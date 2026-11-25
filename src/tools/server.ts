@@ -3,6 +3,7 @@ import { type CodeClarityClient } from "../codeclarity";
 import { ListAnalysesTool } from "./analyses";
 import { ExplainDependencyTool } from "./explain";
 import { GetFindingsTool } from "./findings";
+import { FixNextTool } from "./fix-next";
 import { ListLicensesTool } from "./licenses";
 import { ListProjectsTool } from "./projects";
 import { type ReadOnlyTool } from "./tool";
@@ -33,6 +34,7 @@ export function createServer(
     new GetFindingsTool(client),
     new ListLicensesTool(client),
     new ExplainDependencyTool(client),
+    new FixNextTool(client),
   ];
   for (const tool of tools) {
     tool.register(server);

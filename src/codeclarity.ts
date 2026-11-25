@@ -94,6 +94,29 @@ export interface GraphNode {
   dev: boolean;
 }
 
+/** One upgrade that fixes vulnerabilities, and where to make it. */
+export interface Fix {
+  rank: {
+    severity_class: string;
+    known_exploited: boolean;
+    high_epss: boolean;
+  };
+  // upgrade_direct, or force_version for a transitive dependency.
+  kind: string;
+  package: string;
+  target_version: string;
+  potentially_breaking: boolean;
+  vulnerability_id: string;
+  vulnerability_count: number;
+  project_count: number;
+  remediations: {
+    project_id: string;
+    project_name: string;
+    workspace: string;
+    command: string;
+  }[];
+}
+
 /** Reads one organization of one instance with an Organization token. */
 export class CodeClarityClient {
   private readonly baseUrl: string;
@@ -240,6 +263,21 @@ export class CodeClarityClient {
         "graph",
       ],
       { workspace, dependency },
+    );
+    return answer.data;
+  }
+
+  /**
+   * Ranks the organization's upgrades by how much each one fixes
+   * @throws {ApiError} If the API refuses the token or the limit
+   *
+   * @param limit How many upgrades to return, 1 to 50
+   * @returns the upgrades, the one that fixes the most first
+   */
+  async fixNext(limit: number): Promise<Fix[]> {
+    const answer = await this.get<{ data: Fix[] }>(
+      ["remediations", "fix-next"],
+      { limit: String(limit) },
     );
     return answer.data;
   }
