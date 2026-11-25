@@ -1,39 +1,5 @@
-import { Client } from "@modelcontextprotocol/client";
-import { InMemoryTransport } from "@modelcontextprotocol/server";
-import { afterEach, describe, expect, it } from "vitest";
-import { CodeClarityClient } from "../codeclarity";
-import { createServer } from "./server";
-
-const realFetch = globalThis.fetch;
-let requestedUrls: string[] = [];
-
-afterEach(() => {
-  globalThis.fetch = realFetch;
-  requestedUrls = [];
-});
-
-/**
- * Connects a client to the server, on an API that answers every request with status and body
- *
- * @param status The HTTP status of every answer
- * @param body The body of every answer
- * @returns the connected client
- */
-async function connect(status: number, body: string): Promise<Client> {
-  globalThis.fetch = (input: string | URL | Request): Promise<Response> => {
-    requestedUrls.push(input instanceof Request ? input.url : input.toString());
-    return Promise.resolve(new Response(body, { status }));
-  };
-  const [serverSide, clientSide] = InMemoryTransport.createLinkedPair();
-  const server = createServer(
-    new CodeClarityClient("http://cc.test/api", "org-1", "ccot_test"),
-    "test",
-  );
-  await server.connect(serverSide);
-  const client = new Client({ name: "test", version: "test" });
-  await client.connect(clientSide);
-  return client;
-}
+import { describe, expect, it } from "vitest";
+import { connect } from "./testing";
 
 const older = {
   id: "a1",
@@ -55,7 +21,7 @@ const newer = {
 
 describe("list_analyses", () => {
   it("lists the project's analyses, the most recent first, without their steps", async () => {
-    const client = await connect(
+    const { client, urls } = await connect(
       200,
       JSON.stringify({
         data: [older, newer],
@@ -70,7 +36,7 @@ describe("list_analyses", () => {
       arguments: { project_id: "p1" },
     });
 
-    expect(requestedUrls[0]).toBe(
+    expect(urls[0]).toBe(
       "http://cc.test/api/org/org-1/projects/p1/analyses?page=0&entries_per_page=100",
     );
     expect(result.structuredContent).toEqual({
@@ -96,7 +62,7 @@ describe("list_analyses", () => {
   });
 
   it("names the project when the API refuses it", async () => {
-    const client = await connect(
+    const { client } = await connect(
       404,
       '{"error_code":"EntityNotFound","error_message":"Entity not found"}',
     );
