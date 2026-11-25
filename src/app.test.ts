@@ -28,7 +28,11 @@ describe("McpApp", () => {
 
     const { tools } = await client.listTools();
 
-    expect(tools.map((tool) => tool.name)).toEqual(["whoami", "list_projects"]);
+    expect(tools.map((tool) => tool.name)).toEqual([
+      "whoami",
+      "list_projects",
+      "list_analyses",
+    ]);
     await handle.close();
   });
 });

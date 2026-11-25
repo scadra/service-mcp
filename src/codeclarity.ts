@@ -99,6 +99,17 @@ export class CodeClarityClient {
   }
 
   /**
+   * Lists the analyses of a project
+   * @throws {ApiError} If the API refuses the token, or the project is not the organization's
+   *
+   * @param projectId The id of the project
+   * @returns the project's analyses, in the API's order
+   */
+  async analyses(projectId: string): Promise<AnalysisSummary[]> {
+    return this.all<AnalysisSummary>(["projects", projectId, "analyses"]);
+  }
+
+  /**
    * Reads every page of a paginated route of the organization
    * @throws {ApiError} If the API answers with an error status
    *
