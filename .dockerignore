@@ -1,0 +1,7 @@
+# Keep VCS data and build or test output out of the build context, as the api does.
+# The image only needs dist/, node_modules/ and package.json, built inside it.
+.git
+node_modules/
+dist/
+coverage/
+.pnpm-store/
