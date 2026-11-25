@@ -36,6 +36,7 @@ describe("McpApp", () => {
       "list_licenses",
       "explain_dependency",
       "fix_next",
+      "get_vulnerability",
     ]);
     await handle.close();
   });

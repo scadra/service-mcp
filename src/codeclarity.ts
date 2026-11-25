@@ -117,6 +117,42 @@ export interface Fix {
   }[];
 }
 
+/** A vulnerability as the organization knows it, and the projects it affects. */
+export interface Vulnerability {
+  vulnerability_id: string;
+  severity_class: string;
+  severity_score: number;
+  details: {
+    description: string;
+    published: string | null;
+    weaknesses: { id: string; name: string }[];
+    epss: { score: number; percentile: number } | null;
+    aliases: string[];
+    references: { url: string }[];
+    affected: { package: string; fixed_versions: string[] }[];
+    // null, or CISA's Known Exploited Vulnerabilities entry when it lists it.
+    known_exploited: {
+      date_added: string;
+      known_ransomware_use: boolean;
+    } | null;
+  };
+  projects: {
+    project_id: string;
+    project_name: string;
+    analysis_id: string;
+    // The branch or tag the analysis read.
+    ref: string;
+    instances: {
+      package: string;
+      installed_version: string;
+      workspace: string;
+      prod: boolean;
+      fixed_version: string | null;
+      excluded_by_policy: boolean;
+    }[];
+  }[];
+}
+
 /** Reads one organization of one instance with an Organization token. */
 export class CodeClarityClient {
   private readonly baseUrl: string;
@@ -279,6 +315,21 @@ export class CodeClarityClient {
       ["remediations", "fix-next"],
       { limit: String(limit) },
     );
+    return answer.data;
+  }
+
+  /**
+   * Reads what the organization knows of one vulnerability
+   * @throws {ApiError} If the API refuses the token, or knows no such vulnerability
+   *
+   * @param vulnerabilityId The vulnerability's id, such as CVE-2021-44906 or a GHSA id
+   * @returns the vulnerability and the organization's projects it affects
+   */
+  async vulnerability(vulnerabilityId: string): Promise<Vulnerability> {
+    const answer = await this.get<{ data: Vulnerability }>([
+      "vulnerabilities",
+      vulnerabilityId,
+    ]);
     return answer.data;
   }
 

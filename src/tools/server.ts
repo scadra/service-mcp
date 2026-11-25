@@ -7,6 +7,7 @@ import { FixNextTool } from "./fix-next";
 import { ListLicensesTool } from "./licenses";
 import { ListProjectsTool } from "./projects";
 import { type ReadOnlyTool } from "./tool";
+import { GetVulnerabilityTool } from "./vulnerability";
 import { WhoamiTool } from "./whoami";
 
 const instructions = `Reads one CodeClarity organization's analysis results: projects, analyses, vulnerabilities,
@@ -35,6 +36,7 @@ export function createServer(
     new ListLicensesTool(client),
     new ExplainDependencyTool(client),
     new FixNextTool(client),
+    new GetVulnerabilityTool(client),
   ];
   for (const tool of tools) {
     tool.register(server);
