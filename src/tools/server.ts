@@ -1,6 +1,14 @@
 import { McpServer } from "@modelcontextprotocol/server";
 import { type CodeClarityClient } from "../codeclarity";
-import { registerWhoami } from "./whoami";
+import { ListAnalysesTool } from "./analyses";
+import { ExplainDependencyTool } from "./explain";
+import { GetFindingsTool } from "./findings";
+import { FixNextTool } from "./fix-next";
+import { ListLicensesTool } from "./licenses";
+import { ListProjectsTool } from "./projects";
+import { type ReadOnlyTool } from "./tool";
+import { GetVulnerabilityTool } from "./vulnerability";
+import { WhoamiTool } from "./whoami";
 
 const instructions = `Reads one CodeClarity organization's analysis results: projects, analyses, vulnerabilities,
 dependencies and licenses. Every tool only reads; none starts an analysis or changes anything.`;
@@ -20,6 +28,18 @@ export function createServer(
     { name: "codeclarity", title: "CodeClarity", version },
     { instructions },
   );
-  registerWhoami(server, client);
+  const tools: ReadOnlyTool[] = [
+    new WhoamiTool(client),
+    new ListProjectsTool(client),
+    new ListAnalysesTool(client),
+    new GetFindingsTool(client),
+    new ListLicensesTool(client),
+    new ExplainDependencyTool(client),
+    new FixNextTool(client),
+    new GetVulnerabilityTool(client),
+  ];
+  for (const tool of tools) {
+    tool.register(server);
+  }
   return server;
 }
