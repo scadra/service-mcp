@@ -45,11 +45,21 @@ claude mcp add codeclarity \
 Without Docker, Node 22 or later runs it: `pnpm install && pnpm build`, then `node dist/main.js` in place of
 `docker run ...`.
 
-Every tool only reads:
+Every tool only reads, and returns a summary of the API's answer:
 
-| Tool     | What it returns                                                |
-| -------- | -------------------------------------------------------------- |
-| `whoami` | the organization the token reads, and how many projects it has |
+| Tool                 | What it returns                                                                          |
+| -------------------- | ---------------------------------------------------------------------------------------- |
+| `whoami`             | the organization the token reads, and how many projects it has                           |
+| `list_projects`      | the organization's projects, each with its most recent analysis                          |
+| `list_analyses`      | a project's analyses, the most recent first: status, branch, tag, failure reason         |
+| `get_findings`       | an analysis's vulnerabilities, the most serious first, down to `min_severity`            |
+| `list_licenses`      | an analysis's licenses and the dependencies under each, the policy violations first      |
+| `explain_dependency` | one dependency: license, latest version, vulnerabilities and the import paths to it      |
+| `fix_next`           | the organization's upgrades that fix the most first, each with its command               |
+| `get_vulnerability`  | one vulnerability: severity, EPSS, CISA listing, fixed versions and the projects it hits |
+
+`get_findings`, `list_licenses` and `explain_dependency` take a `project_id`, and read its most recent ended
+analysis unless `analysis_id` names another one, in the workspace `.` unless `workspace` names another one.
 
 - Logs go to stderr as JSON; stdout carries only MCP messages.
 - The server exits with code 1, naming every missing variable, when one of the three is not set.
